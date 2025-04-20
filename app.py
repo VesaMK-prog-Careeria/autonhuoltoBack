@@ -66,15 +66,17 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Virheellinen käyttäjätunnus tai salasana"}), 401
 
-    token = create_access_token(identity=user.id)
+    token = create_access_token(identity=str(user.id))  # 🔧 TÄRKEÄ MUUTOS
     return jsonify({"token": token, "username": user.username})
 
 # Tämä on uusi reitti, joka palauttaa kaikki huollot
 @app.route("/api/maintenance", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_maintenance():
-    user_id = get_jwt_identity()
-    maintenances = Maintenance.query.filter_by(user_id=user_id).all()
+    #user_id = get_jwt_identity()
+    #print("✅ GET user_id:", user_id)  # 🐞 tulostus
+    #maintenances = Maintenance.query.filter_by(user_id=user_id).all()
+    maintenances = Maintenance.query.all()  # 🔓 Ei enää suodatusta
     return jsonify([{
         "id": m.id,
         "car": m.car,
@@ -103,7 +105,7 @@ def add_maintenance():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        m = Maintenance(car=car, description=description, date=date)
+        m = Maintenance(car=car, description=description, date=date, user_id=user_id)
         if km:
             try:
                 m.km = int(km)  # Muuta km kokonaisluvuksi, jos se on annettu
