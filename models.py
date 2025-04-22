@@ -16,5 +16,5 @@ class Maintenance(db.Model):
     date = db.Column(db.String(50), nullable=False)
     km = db.Column(db.Integer)
     image_path = db.Column(db.String(200))
-    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'))  # 🔐 liittyy käyttäjään
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # 🔐 liittyy käyttäjään
     
