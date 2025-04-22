@@ -173,7 +173,7 @@ if __name__ == "__main__":
             print("❌ Virhe tietokantayhteydessä:")
             print(e)
 
-    app.run(debug=True)
+    app.run(debug=False)
 
     # titokannan ja taulujen luonti
     # db.create_all() tai db.init_app(app) ja db.create_all() app.runin jälkeen
