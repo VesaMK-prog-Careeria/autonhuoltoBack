@@ -23,7 +23,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db.init_app(app)
 # CORS(app)
-CORS(app, origins=["http://localhost:3000", "https://precious-praline-353513.netlify.app/"])  # Salli vain localhost:3000
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "https://precious-praline-353513.netlify.app"]}}, supports_credentials=True)
 
 # Reitit
 @app.route("/")
