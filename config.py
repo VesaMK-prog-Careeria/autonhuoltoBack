@@ -1,8 +1,9 @@
 import os
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("postgresql://autonhuolto_user:Q8iBgQXBXkfF2ZQT4JfQsjbMfwfef2xG@dpg-d03nf8ali9vc73frn3j0-a.frankfurt-postgres.render.com/autonhuolto")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = "salainenavain123"
 
 # class Config:
 #     SQLALCHEMY_DATABASE_URI = (
