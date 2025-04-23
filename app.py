@@ -85,13 +85,18 @@ def list_users():
 @app.route("/api/users/<int:user_id>", methods=["DELETE"])
 @jwt_required()
 def delete_user(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "Käyttäjää ei löytynyt"}), 404
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "Käyttäjää ei löytynyt"}), 404
 
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({"message": "Käyttäjä poistettu"})
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "Käyttäjä poistettu"}), 200
+
+    except Exception as e:
+        print("❌ Käyttäjän poisto epäonnistui:", e)
+        return jsonify({"error": str(e)}), 500
 
 #* Lisää käyttäjä (vain sisäänkirjautuneille)
 @app.route("/api/users", methods=["POST"])
