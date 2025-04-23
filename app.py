@@ -93,6 +93,28 @@ def delete_user(user_id):
     db.session.commit()
     return jsonify({"message": "Käyttäjä poistettu"})
 
+#* Lisää käyttäjä (vain sisäänkirjautuneille)
+@app.route("/api/users", methods=["POST"])
+@jwt_required()
+def create_user():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Anna käyttäjätunnus ja salasana"}), 400
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "Käyttäjätunnus on jo olemassa"}), 400
+
+    hashed_pw = generate_password_hash(password)
+    new_user = User(username=username, password_hash=hashed_pw)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "Käyttäjä lisätty"}), 201
+
+
 # Tämä on uusi reitti, joka palauttaa kaikki huollot
 @app.route("/api/maintenance", methods=["GET"])
 #@jwt_required()
