@@ -1,4 +1,5 @@
 from app import app, db
+from models import User, Maintenance
 
 # ** python init_db.py
 with app.app_context():

@@ -1,3 +1,4 @@
+#region Importit
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from models import db, Maintenance, User
@@ -8,24 +9,24 @@ from flask_jwt_extended import JWTManager, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
-
-# ** flask run
+#endregion
 
 app = Flask(__name__)
 app.config.from_object(Config)
-#app.config['JWT_SECRET_KEY'] = 'salainenavain123'  # 🔐 vaihda halutessasi
+#app.config['JWT_SECRET_KEY'] = 'salainenavain123' #Muutettu config.py-tiedostoon
 jwt = JWTManager(app)
 
-# Kuvien tallennuskansio
+#* Kuvien tallennuskansio
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Luo kansio, jos ei ole olemassa
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+#* Tietokannan alustaminen paikallinen sekä Netlify
 db.init_app(app)
 # CORS(app)
 CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "https://precious-praline-353513.netlify.app"]}}, supports_credentials=True)
 
-# Reitit
+#region Reitit
 @app.route("/")
 def hello():
     return "Flask toimii"
@@ -35,7 +36,8 @@ def test_db():
     result = db.session.execute(text("SELECT DB_NAME()")).scalar()
     return f"Ollaan yhteydessä tietokantaan: {result}"
 
-# Tämä on uusi reitti, joka palauttaa kaikki käyttäjät
+
+#* Tämä on reitti, joka palauttaa kaikki käyttäjät
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -55,7 +57,7 @@ def register():
     db.session.commit()
     return jsonify({"message": "Rekisteröinti onnistui"}), 201
 
-
+#* Tämä on reitti, joka palauttaa kaikki käyttäjät
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -69,6 +71,28 @@ def login():
     token = create_access_token(identity=str(user.id))  # 🔧 TÄRKEÄ MUUTOS
     return jsonify({"token": token, "username": user.username})
 
+#* Tämä on reitti, joka palauttaa kaikki käyttäjät
+@app.route("/api/users", methods=["GET"])
+@jwt_required()
+def list_users():
+    users = User.query.all()
+    return jsonify([{
+        "id": u.id,
+        "username": u.username
+    } for u in users])
+
+#* Tämä on reitti, joka palauttaa yksittäisen käyttäjän
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@jwt_required()
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Käyttäjää ei löytynyt"}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "Käyttäjä poistettu"})
+
 # Tämä on uusi reitti, joka palauttaa kaikki huollot
 @app.route("/api/maintenance", methods=["GET"])
 #@jwt_required()
@@ -76,7 +100,7 @@ def get_maintenance():
     #user_id = get_jwt_identity()
     #print("✅ GET user_id:", user_id)  # 🐞 tulostus
     #maintenances = Maintenance.query.filter_by(user_id=user_id).all()
-    maintenances = Maintenance.query.all()  # 🔓 Ei enää suodatusta
+    maintenances = Maintenance.query.all()  #TODO 🔓 Ei enää suodatusta koska suodatus ei toiminut
     return jsonify([{
         "id": m.id,
         "car": m.car,
@@ -86,13 +110,13 @@ def get_maintenance():
         "image_path": m.image_path  # Lisää kuva polku
     } for m in maintenances])
 
-# Lisää huolto ja kuva
+#* Lisää huolto ja kuva
 @app.route("/api/maintenance", methods=["POST"])
 @jwt_required()
 def add_maintenance():
     try:
         user_id = get_jwt_identity()
-        # Hae käyttäjätunnus JWT:stä
+        #* Hae käyttäjätunnus JWT:stä
         car = request.form.get("car")
         description = request.form.get("description")
         km = request.form.get("km")
@@ -126,7 +150,8 @@ def add_maintenance():
         return jsonify({"error": str(e)}), 500
 
 
-# Tämä on uusi reitti, joka päivittää yksittäisen huollon
+#* Tämä on uusi reitti, joka päivittää yksittäisen huollon
+#TODO tämä ei vielä käytössä koska kuvat ei toimi
 @app.route("/api/maintenance/<int:id>", methods=["PUT"])
 def update_maintenance(id):
     data = request.get_json()
@@ -140,7 +165,7 @@ def update_maintenance(id):
     db.session.commit()
     return jsonify({"message": "Updated successfully"})
 
-# Tämä on uusi reitti, joka poistaa yksittäisen huollon
+#* Tämä on uusi reitti, joka poistaa yksittäisen huollon
 @app.route("/api/maintenance/<int:id>", methods=["DELETE"])
 def delete_maintenance(id):
     m = Maintenance.query.get(id)
@@ -150,19 +175,20 @@ def delete_maintenance(id):
     db.session.commit()
     return jsonify({"message": "Deleted successfully"})
 
-# Palauta kuva tiedostosta
+#* Palauta kuva tiedostosta
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Palauta kaikki huollot tietyn auton mukaan
+#* Palauta kaikki huollot tietyn auton mukaan
 @app.route("/api/cars", methods=["GET"])
 def get_unique_cars():
     cars = db.session.query(Maintenance.car).distinct().all()
     car_list = [c[0] for c in cars if c[0]]  # poista mahdolliset None-arvot
     return jsonify(car_list)
+#endregion
 
-# Tärkeä: tämä viimeiseksi! Tämä siirretty init_db.py-tiedostosta tänne
+#! Tärkeä: tämä viimeiseksi! Tämä siirretty init_db.py-tiedostosta tänne
 if __name__ == "__main__":
     with app.app_context():
         try:
@@ -174,7 +200,9 @@ if __name__ == "__main__":
             print(e)
 
     app.run(debug=False)
+    #? debug=True ei saa olla käytössä tuotannossa, koska se voi paljastaa tietoturva-aukkoja
 
-    # titokannan ja taulujen luonti
-    # db.create_all() tai db.init_app(app) ja db.create_all() app.runin jälkeen
-    # db.create_all() luo taulut vain, jos niitä ei ole olemassa
+    #? tietokannan ja taulujen luonti
+    #? db.create_all() tai db.init_app(app) ja db.create_all() app.runin jälkeen
+    #? db.create_all() luo taulut vain, jos niitä ei ole olemassa
+    # ❌ ✅ 🔓 🐞 🔧
