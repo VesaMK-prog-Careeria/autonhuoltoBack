@@ -2,10 +2,15 @@
 Tämä on Flask-pohjainen REST API autonhuoltosovellukseen. API tarjoaa rekisteröitymisen, kirjautumisen, huoltotietojen hallinnan ja käyttäjien hallinnan. Käyttää PostgreSQL-tietokantaa Render-palvelussa.
 
 🔧 Teknologiat
+
     Python / Flask
+
     PostgreSQL
+
     SQLAlchemy
+
     Flask-JWT-Extended (JWT-autentikointi)
+
     Render (hostaus)
 
 🚀 Käynnistys paikallisesti
@@ -25,11 +30,19 @@ JWT_SECRET_KEY=salainenavain123
 flask run
 
 🔐 Reitit
+
     POST /api/register – rekisteröi uusi käyttäjä
+
     POST /api/login – kirjaudu sisään ja saa JWT-token
+
     GET /api/maintenance – hae huollot (JWT vaaditaan)
+
     POST /api/maintenance – lisää uusi huolto (JWT vaaditaan)
+
     GET /api/cars – palauttaa kaikki tallennetut autot
+
     GET /api/users – listaa käyttäjät (admin)
+
     POST /api/users – lisää käyttäjä (admin)
+
     DELETE /api/users/:id – poistaa käyttäjän (admin)
